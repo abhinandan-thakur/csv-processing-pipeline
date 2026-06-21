@@ -1,0 +1,60 @@
+services:
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ai_transaction_pipeline
+      POSTGRES_USER: root_user
+      POSTGRES_PASSWORD: qOipKgS31XeyLgpZ4K30zG8SsjnA7aN8aCalJzO4VWY=
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    image: ai-transaction-pipeline
+    env_file:
+      - .env.docker
+    command: gunicorn AI_transaction_processing_pipeline.wsgi:application --bind 0.0.0.0:8001 --workers 4
+    ports:
+      - "8001:8001"
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - db
+      - redis
+
+  celery:
+    build: .
+    image: ai-transaction-pipeline
+    env_file:
+      - .env.docker
+    command: celery -A AI_transaction_processing_pipeline worker -l info
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - db
+      - redis
+
+  k6:
+    image: grafana/k6
+    container_name: transaction-k6
+    profiles:
+      - stresstest
+    volumes:
+      - ./tests:/scripts
+    command:
+      - run
+      - /scripts/stress.js
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  uploads_data:
