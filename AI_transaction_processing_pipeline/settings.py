@@ -27,9 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-TESTING = True
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+TESTING = os.getenv("TESTING", "False").lower() == "true"
+PROFILING = os.getenv("PROFILING", "False").lower() == "true"
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -42,7 +42,6 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     'jobs',
-    # 'silk',
     'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -52,8 +51,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
+
+if PROFILING:
+    INSTALLED_APPS.append("silk")
+
 MIDDLEWARE = [
-    # 'silk.middleware.SilkyMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -62,6 +64,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if PROFILING:
+    MIDDLEWARE.insert(0,"silk.middleware.SilkyMiddleware")
 
 ROOT_URLCONF = 'AI_transaction_processing_pipeline.urls'
 
@@ -134,7 +139,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-CELERY_BROKER_URL = os.getenv("CELEERY_BROKER_URL","redis://localhost:6379/0")
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL","redis://localhost:6379/0")
 
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND","redis://localhost:6379/0")
 
