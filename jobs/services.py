@@ -35,11 +35,6 @@ class TransactionProcessor:
                 if pd.isna(value):
                     row[key] = None
 
-        # for row in transactions:
-        #     if any(pd.isna(v) for v in row.values()):
-        #         # print(row)
-        #         break
-
         anomalies = [r for r in transactions if r["is_anomaly"]]
 
         return {
@@ -75,11 +70,14 @@ class TransactionProcessor:
         return df
 
     def llm_classification(self, df):
-        uncategorized = df[df['category']=='Uncategorized']
+        uncategorized = df[df['category'] == 'Uncategorized'].copy()
+
+        uncategorized["row_id"] = uncategorized.index
         if uncategorized.empty:
             return df
         
         transactions = uncategorized[['txn_id', 'merchant', 'amount', 'notes']].to_dict('records')
+        transactions = uncategorized[['row_id', 'merchant', 'amount', 'notes']].to_dict('records')
 
         prompt = f"""
         Classify each transaction into exactly one category:
@@ -99,7 +97,7 @@ class TransactionProcessor:
 
         [
             {{
-                "txn_id": "TXN1000",
+                "row_id": 5,
                 "category": "Shopping"
             }}
         ]
@@ -117,13 +115,16 @@ class TransactionProcessor:
             content=self.call_llm_with_retry(prompt,'classification')
             result = json.loads(content)
         except Exception as e:
-            # print("Failed to parse LLM response:")
+            print("Failed to parse LLM response:")
             return df
         
         category_map = {
-            item["txn_id"]: item["category"]
+            item["row_id"]: item["category"]
             for item in result
         }
+
+        for row_id, category in category_map.items():
+            df.loc[row_id, "category"] = category
 
         mask = ((df["category"] == "Uncategorized") & (df["txn_id"].isin(category_map.keys())))
 

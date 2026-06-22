@@ -37,12 +37,6 @@ class JobView(APIView):
 
         celery_end = time.perf_counter()
 
-        # print(f"Validation: {(validation_end - start)*1000:.2f} ms \n")
-        # print(f"DB Save: {(db_end - validation_end)*1000:.2f} ms \n")
-        # print(f"Celery Queue: {(celery_end - db_end)*1000:.2f} ms \n")
-        # print(f"Total: {(celery_end - start)*1000:.2f} ms \n")
-        # logger.warning("Validation=%s DB=%s Celery=%s Total=%s",validation_end - start,db_end - validation_end,celery_end - db_end,celery_end - start)
-
         return Response(
             {
                 "job_id": job.id,
