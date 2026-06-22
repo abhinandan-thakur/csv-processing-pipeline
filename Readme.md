@@ -117,30 +117,7 @@ The Django development server is intended for local development only. Docker use
 ---
 
 ## Architecture
-
-```text
-Client
-   |
-   v
-Gunicorn
-   |
-   v
-Django REST API
-   |
-   +--------------------+
-   |                    |
-   v                    v
-PostgreSQL          Redis
-                         |
-                         v
-                    Celery Worker
-                         |
-                         v
-                  Transaction Processing
-                         |
-                         v
-                     LLM Calls
-```
+<img width="1232" height="761" alt="image" src="https://github.com/user-attachments/assets/32820a06-0a46-4c57-8a60-cf730fbb32c3" />
 
 ---
 
