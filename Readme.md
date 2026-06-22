@@ -63,7 +63,11 @@ The API will be available at:
 ```text
 http://localhost:8001
 ```
+`FOR TESTING USING k6`
 
+``` bash
+sudo docker compose --profile stresstest up --build
+```
 ---
 
 ## Local Development (Without Docker)
